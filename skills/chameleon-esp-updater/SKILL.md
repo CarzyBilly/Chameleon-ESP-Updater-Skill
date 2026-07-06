@@ -35,6 +35,36 @@ Default fresh-run workspace layout under `DESKTOP_ROOT`:
 - `chameleon-work\builds` for staged DLLs and hashes
 - `chameleon-work\notes` for local evidence and test notes
 
+## Desktop Delivery Folder
+
+Keep `DESKTOP_ROOT\chameleon-work` as the internal workspace, but always copy user-facing test artifacts to a simple folder directly under the Desktop root so the user does not have to browse nested build paths.
+
+Create this folder at the start of any build-producing route:
+
+```text
+DESKTOP_ROOT\Chameleon-ESP-Output
+```
+
+Inside it, separate the two routes:
+
+```text
+Chameleon-ESP-Output\Author-Patch
+Chameleon-ESP-Output\From-Zero
+```
+
+For every author/upstream patch build, copy the final DLL, matching Xenos ESP profile, SHA256 text file, and short test note into `Author-Patch`. For every from-zero staged build, copy each staged DLL, the current Xenos ESP profile, SHA256 text file, and short stage note into `From-Zero`. Keep the deeper `chameleon-work` copies too; the Desktop delivery folder is the easy-to-find user handoff location.
+
+Use unique filenames and do not overwrite older test builds. Prefer names like:
+
+```text
+chameleonEsp_author_patch_YYYYMMDD_HHMM.dll
+chameleonEsp_from_zero_v3_player_names_YYYYMMDD_HHMM.dll
+chameleon-author-patch.xpr
+chameleon-from-zero-current.xpr
+SHA256.txt
+README-test-this.txt
+```
+
 ## Version Gate / Route Selection
 
 Before deciding whether to patch upstream or dump the SDK from zero, collect version evidence and choose the cheapest safe route.
@@ -112,8 +142,9 @@ If a useful fix was discovered in a previous session, encode the fix as a rule o
    - English/Simplified Chinese toggle: add an internal translation helper and menu language option while preserving real player names
    - CJK font fix: compile as UTF-8 and load/merge CJK-capable Windows fonts so Chinese UI and player names do not render as boxes
 6. Keep the author's existing features intact unless the user explicitly requests the trimmed from-zero feature set.
-7. Build Release x64 and copy the output to a unique DLL name such as `chameleonEsp_author_enhanced_<date>.dll`.
-8. Update the Xenos ESP profile to point to that exact DLL, then ask the user to test Enable, crowded-room names, Chinese text, role/enemy ESP, and dead-body filtering.
+7. Build Release x64 and copy the output to a unique DLL name such as `chameleonEsp_author_patch_YYYYMMDD_HHMM.dll` in both `DESKTOP_ROOT\chameleon-work\builds` and `DESKTOP_ROOT\Chameleon-ESP-Output\Author-Patch`.
+8. Write `SHA256.txt`, `README-test-this.txt`, and a matching Xenos ESP profile in `DESKTOP_ROOT\Chameleon-ESP-Output\Author-Patch`. Point that profile at the Desktop delivery DLL, not the nested workspace DLL.
+9. Update the nested Xenos ESP profile too, then ask the user to test Enable, crowded-room names, Chinese text, role/enemy ESP, and dead-body filtering.
 
 ## Build Tools Prerequisite
 
@@ -364,6 +395,7 @@ Produce:
 - final source folder if code edits were made
 - short local build/test notes with build command, DLL hash, tested stage, and remaining unknowns
 - final notes stating which player-name resolver paths, role resolver paths, and CJK font paths are active
+- Desktop delivery copies under `DESKTOP_ROOT\Chameleon-ESP-Output\From-Zero`, including the final DLL, current Xenos ESP profile, SHA256 text file, and `README-test-this.txt`
 
 Output name pattern: `chameleonEsp_v6_final.dll`
 
@@ -378,9 +410,11 @@ Use MSBuild Release x64. Example:
 If the repo uses another toolset, read the project file and adapt the command.
 
 After every build:
-- copy DLL to a stable output folder under `DESKTOP_ROOT`
-- compute SHA256
-- update the Xenos test profile so its `imagePath` points to the newly built staged DLL
+- copy DLL to a stable internal output folder under `DESKTOP_ROOT\chameleon-work\builds`
+- copy the user-facing DLL to `DESKTOP_ROOT\Chameleon-ESP-Output\Author-Patch` for upstream patch builds or `DESKTOP_ROOT\Chameleon-ESP-Output\From-Zero` for staged from-zero builds
+- compute SHA256 and write it to a `SHA256.txt` file in the same Desktop delivery subfolder as the DLL
+- update the Xenos test profile so its `imagePath` points to the Desktop delivery DLL the user should inject
+- copy that Xenos profile into the same Desktop delivery subfolder as the DLL
 - write stage number, source path, build command, warnings/errors, and test purpose
 - for builds at or after player-name/role stages, record whether name resolver, role resolver, and CJK font fallback are included
 - pause for user injection/runtime testing before moving to the next behavioral stage unless the user explicitly asks to continue without testing
@@ -433,14 +467,16 @@ After each staged chameleonEsp DLL build, create or update a matching Xenos prof
 Rules:
 - Keep the Dumper-7 profile separate, e.g. `DESKTOP_ROOT\chameleon-work\injector\chameleon-dumper.xpr`, pointing to `Dumper-7_x64_Release.dll`.
 - For ESP test builds, create a separate profile such as `DESKTOP_ROOT\chameleon-work\injector\chameleon-stage-current.xpr` or `chameleon-final.xpr`.
+- Also write a copy of the active ESP profile into the Desktop delivery folder: `DESKTOP_ROOT\Chameleon-ESP-Output\Author-Patch\chameleon-author-patch.xpr` or `DESKTOP_ROOT\Chameleon-ESP-Output\From-Zero\chameleon-from-zero-current.xpr`.
+- The Desktop delivery profile must point to the Desktop delivery DLL in the same route folder, so the user can inject without browsing nested folders.
 - Also copy the active ESP profile to `DESKTOP_ROOT\chameleon-work\injector\Xenos-release\XenosCurrentProfile.xpr` when using the official Xenos release folder, so opening `Xenos64.exe` directly loads the latest test DLL.
 - Write profiles as plain ASCII/UTF-8 text without UTF-16 BOM. Do not use PowerShell `-Encoding Unicode`.
 - Preserve Existing process mode and Native inject mode:
   - `<processMode>0</processMode>`
   - `<injectMode>0</injectMode>`
   - `<procName>PenguinHotel-Win64-Shipping.exe</procName>`
-- Set `<imagePath>` to the exact staged DLL the user should test next. If a DLL cannot be overwritten because the game/injector still holds it open, write a new uniquely named DLL and point the Xenos profile to that new filename.
-- Tell the user which profile to open and which DLL it points to before testing.
+- Set `<imagePath>` to the exact staged DLL the user should test next, preferring the Desktop delivery DLL path. If a DLL cannot be overwritten because the game/injector still holds it open, write a new uniquely named DLL and point the Xenos profile to that new filename.
+- Tell the user to open the profile from `DESKTOP_ROOT\Chameleon-ESP-Output\...` and state which DLL it points to before testing.
 
 Profile template:
 ```xml

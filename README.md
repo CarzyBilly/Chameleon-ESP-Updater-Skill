@@ -104,6 +104,15 @@ skill 会按这个顺序执行：
 16. 用户测试后，根据截图、现象或崩溃日志继续修。
 17. 崩溃时优先自动读取 Unreal Crash Reporter 生成的文件，不要求用户先复制窗口文字。
 
+生成结果会额外复制到桌面根目录下的 `Chameleon-ESP-Output`，方便直接找文件：
+
+```text
+Chameleon-ESP-Output\Author-Patch   原作者同版本大补丁输出
+Chameleon-ESP-Output\From-Zero      从 0 dump SDK 适配输出
+```
+
+这里会放用户要测试/注入的 DLL、对应 Xenos 配置、`SHA256.txt` 和简短测试说明。`chameleon-work` 仍作为内部工作目录保留源码、工具、SDK、日志和中间构建。
+
 版本判断里不要把三个版本混在一起：`2.5.0` 这类是游戏显示版本，Steam `buildid` 是安装包构建号，`++UE5+Release-...` 是引擎/exe 版本。优先用游戏显示版本和作者声明对比，Steam buildid 用来判断同版本下是否又更新了包。
 
 ## 分阶段构建

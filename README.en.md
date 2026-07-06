@@ -104,6 +104,15 @@ The skill follows this order:
 16. Continue patching based on screenshots, behavior, or crash logs from user testing.
 17. On crashes, read Unreal Crash Reporter files automatically before asking the user to copy text from the crash window.
 
+Build outputs are also copied to `Chameleon-ESP-Output` directly under the Desktop root so users do not need to browse nested work folders:
+
+```text
+Chameleon-ESP-Output\Author-Patch   upstream-matching author patch output
+Chameleon-ESP-Output\From-Zero      from-zero SDK dump adaptation output
+```
+
+This folder contains the DLL to test/inject, the matching Xenos profile, `SHA256.txt`, and a short test note. `chameleon-work` remains the internal workspace for source, tools, SDK dumps, logs, and intermediate builds.
+
 The workflow keeps these version signals separate: `2.5.0` style values are player-facing game versions, Steam `buildid` is the installed package build, and `++UE5+Release-...` is the engine/exe version. Route selection primarily uses the game display version and upstream declaration; Steam buildid is used to catch same-version package updates.
 
 ## Build Stages
