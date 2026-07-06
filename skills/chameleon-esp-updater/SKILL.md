@@ -11,6 +11,8 @@ Work from evidence, not guesses. Read the dumped SDK and current source at code 
 
 Resolve the user's real Desktop path at runtime. Do not hard-code `D:\Desktop` or `C:\Users\<name>\Desktop` unless the user explicitly gives that path.
 
+This skill must be self-contained. Do not require, copy from, or compare against the creator's previous enhanced source folders, old DLLs, local final packages, or historical test workspaces. Only use a previous local build/source when the user explicitly asks for a regression comparison. In normal runs, reconstruct patches from the current upstream source, the current SDK evidence, and the patch rules in this skill.
+
 ## Desktop Path Discovery
 
 Before creating work/output folders, determine `DESKTOP_ROOT`:
@@ -58,7 +60,7 @@ Resolve the author's current support level:
 - If the author does not declare a game version, treat the upstream support level as unknown and use a compile/runtime probe before doing the full dump.
 
 Route decision:
-- If the installed game display version matches the author's declared supported version, and Steam buildid/date does not show a newer installed game than the author's update, use the lighter upstream patch route: apply the tested render crash, crowded-room name, stale-body/current-body ESP guard, English/Simplified Chinese, and CJK font patches to a fresh `phxgg/chameleonEsp` tree. Use the `chameleon-author-patch-i18n` skill if available.
+- If the installed game display version matches the author's declared supported version, and Steam buildid/date does not show a newer installed game than the author's update, use the lighter upstream patch route: apply the tested render crash, crowded-room name, stale-body/current-body ESP guard, English/Simplified Chinese, and CJK font patches to a fresh `phxgg/chameleonEsp` tree. The patch route must be implemented from the rules below, not by copying an old enhanced package.
 - If the installed game display version is greater than the author's declared supported version, or the Steam buildid clearly changed after the author's latest update, use the full from-zero route: Dumper-7, fresh SDK, code-level SDK reading, and staged DLL builds.
 - If the versions are equal but the patched upstream build still crashes, fails to compile against its SDK, or ESP fields behave like the SDK is stale, escalate to the full from-zero route.
 - If author support is unknown, first try the upstream patch route only when it can be built quickly and safely. If it fails at SDK fields/classes, do not keep patching blindly; switch to the from-zero route.
@@ -68,6 +70,35 @@ When reporting this decision to the user, say exactly which route was chosen and
 - installed Steam buildid
 - author declared supported version/buildid, or `unknown`
 - reason for choosing upstream patch or full SDK dump
+
+## Upstream Patch Route
+
+Use this route only when the author's current source appears to target the installed game version. It produces a full-feature author build with local fixes, not the trimmed from-zero build.
+
+1. Download or clone a fresh `https://github.com/phxgg/chameleonEsp` tree into `DESKTOP_ROOT\chameleon-work\upstream\chameleonEsp` or another clearly named fresh folder.
+2. Do not ask the user for the creator's old enhanced source, old DLL, or final package. Treat the upstream tree as the only source input.
+3. Read before editing:
+   - `chameleonEsp\CheatManager.cpp`
+   - `chameleonEsp\CheatManager.hpp`
+   - `chameleonEsp\Main.cpp`
+   - `chameleonEsp\Menu.cpp`
+   - `chameleonEsp\Settings.cpp`
+   - `chameleonEsp\Settings.hpp`
+   - `chameleonEsp\includes.hpp`
+   - `chameleonEsp\chameleonEsp.vcxproj`
+4. Search for existing fixes and avoid duplicating them:
+   ```powershell
+   rg -n "snapshotMutex|snapshotLock|g_runtimeReady|TryCopyPlayerStateNameAndPawnWide|iLanguage|ImFontGlyphRangesBuilder|TryResolvePlayerStateActiveBody|activeBodyByState|GetGlyphRangesChinese" <repo>\chameleonEsp
+   ```
+5. Apply these self-contained patches, adapting only to names/fields that exist in the current source/SDK:
+   - crash/render guard: protect `hkPresent`, `WndProc`, hotkeys, unload, and snapshot publishing; prefer an injection-safe native lock such as `SRWLOCK` over an object-owned `std::mutex` when `RenderEsp()` crashes in `msvcp140`
+   - crowded-room player names: build a per-frame `PlayerState -> pawn/character/name` map from `GameState->PlayerArray`, PlayerState actors, `GetPawn()`, `PawnPrivate`, `TargetCharacter`, `OwnerCharacter_LINK`, `CustomPlayerName`, and `PlayerNamePrivate`
+   - stale-body/current-body ESP guard: build `activeBodyByState` each frame and skip an actor only when the same PlayerState clearly points to another valid current body
+   - English/Simplified Chinese toggle: add an internal translation helper and menu language option while preserving real player names
+   - CJK font fix: compile as UTF-8 and load/merge CJK-capable Windows fonts so Chinese UI and player names do not render as boxes
+6. Keep the author's existing features intact unless the user explicitly requests the trimmed from-zero feature set.
+7. Build Release x64 and copy the output to a unique DLL name such as `chameleonEsp_author_enhanced_<date>.dll`.
+8. Update the Xenos ESP profile to point to that exact DLL, then ask the user to test Enable, crowded-room names, Chinese text, role/enemy ESP, and dead-body filtering.
 
 ## Build Tools Prerequisite
 

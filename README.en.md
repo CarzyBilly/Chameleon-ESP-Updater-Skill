@@ -6,6 +6,8 @@ This is a custom Codex skill for quickly fixing and adapting [phxgg/chameleonEsp
 
 This workflow is designed for two cases: first, the upstream project matches the current game version but still needs local fixes for injection crashes, missing player names, CJK square-box text, or similar issues; second, the game has just updated and upstream has not caught up yet, so a usable build is needed quickly to restore core features. The from-zero quick-adaptation build is not a full replacement for the upstream project. It usually covers only part of the original feature set, with ESP as the main focus and only a few practical features kept.
 
+The skill is self-contained. It does not require or depend on any previous enhanced package, old DLL, old source tree, SDK dump, or local test workspace from my machine. In the upstream-matching route, Codex downloads or uses a clean `phxgg/chameleonEsp` source tree and applies the patch rules in this skill. Only when the installed game is newer does it switch to the full SDK-dump route.
+
 ## Purpose
 
 Use this skill when:
@@ -148,6 +150,8 @@ source file and line number
 - Xenos: https://github.com/DarthTon/Xenos
 
 This repository does not include third-party source code, binaries, SDK dumps, release packages, or compiled DLLs. It only contains the Codex skill workflow.
+
+This repository also does not include any personal enhanced source package, generated SDK dump, or compiled test DLL. Each run should regenerate the result from the current upstream source, current local game files, current SDK evidence, and the patch rules in this skill.
 
 ## Positioning
 
