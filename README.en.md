@@ -15,6 +15,7 @@ Use this skill when:
 - The SDK may have changed and needs to be regenerated with Dumper-7.
 - ESP names show as `Unknown`, `Player`, or disappear in crowded rooms.
 - hunter/survivor/enemy ESP detection is broken.
+- dead survivor bodies keep showing ESP after the real player has switched to another active body, requiring PlayerState current-body validation.
 - Chinese UI text or player names render as square boxes.
 - Multiple staged DLLs are needed so the user can test them one by one.
 
@@ -109,7 +110,7 @@ The workflow builds from shallow to deep:
 v1_baseline_compile      prove upstream source + new SDK can compile
 v2_crash_safety          fix startup/render crashes
 v3_player_names          fix Unknown / Player / missing crowded-room names
-v4_roles_enemy           fix hunter/survivor/enemy ESP
+v4_roles_enemy           fix hunter/survivor/enemy ESP and filter dead/stale body ESP
 v4.5_cjk_font            fix CJK square-box text
 v5_feature_trim          keep only target features
 v6_final                 final test build

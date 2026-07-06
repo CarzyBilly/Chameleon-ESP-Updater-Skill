@@ -58,7 +58,7 @@ Resolve the author's current support level:
 - If the author does not declare a game version, treat the upstream support level as unknown and use a compile/runtime probe before doing the full dump.
 
 Route decision:
-- If the installed game display version matches the author's declared supported version, and Steam buildid/date does not show a newer installed game than the author's update, use the lighter upstream patch route: apply the tested render crash, crowded-room name, English/Simplified Chinese, and CJK font patches to a fresh `phxgg/chameleonEsp` tree. Use the `chameleon-author-patch-i18n` skill if available.
+- If the installed game display version matches the author's declared supported version, and Steam buildid/date does not show a newer installed game than the author's update, use the lighter upstream patch route: apply the tested render crash, crowded-room name, stale-body/current-body ESP guard, English/Simplified Chinese, and CJK font patches to a fresh `phxgg/chameleonEsp` tree. Use the `chameleon-author-patch-i18n` skill if available.
 - If the installed game display version is greater than the author's declared supported version, or the Steam buildid clearly changed after the author's latest update, use the full from-zero route: Dumper-7, fresh SDK, code-level SDK reading, and staged DLL builds.
 - If the versions are equal but the patched upstream build still crashes, fails to compile against its SDK, or ESP fields behave like the SDK is stale, escalate to the full from-zero route.
 - If author support is unknown, first try the upstream patch route only when it can be built quickly and safely. If it fails at SDK fields/classes, do not keep patching blindly; switch to the from-zero route.
@@ -186,6 +186,7 @@ Before editing:
    - `GetPawn()`
    - `TargetCharacter`
    - `OwnerCharacter_LINK`
+   - current-body links such as `TargetCharacter`, `OwnerCharacter_LINK`, `GetPawn()`, and `PawnPrivate`
    - `World->GameState->PlayerArray`
    - role indicators or runtime class-name alternatives
    - death flags, health fields, ragdoll/simulation signals
@@ -255,6 +256,7 @@ Goal: restore hunter/survivor/enemy display without trusting stale SDK role fiel
 
 First auto-discover role evidence from the dumped SDK:
 - search for old and new role indicators such as `IsHunter`, `Hunter`, `Survivor`, `KingCharacter`, `LinkCharacter`, `PlayerClass`, role enums, game-mode class names, and game-state fields
+- search for current-body evidence such as `GetPawn()`, `PawnPrivate`, `TargetCharacter`, `OwnerCharacter_LINK`, `MyPlayerState`, `MyPlayerState_LINK`, `LastMyPlayerState`, `PlayerArray`, and body/class fields such as `CurrentBodyClass`
 - inspect class inheritance and runtime Blueprint class names for player characters
 - prefer explicit replicated fields when present, then game-state links such as `KingCharacter`, then runtime class-name fallback
 
@@ -262,6 +264,8 @@ Use:
 - runtime class-name fallback, e.g. names containing `Hunter`, `Survivor`, `King`, or game-specific role markers
 - conservative `IsEnemy`: if roles are unknown, do not hide ESP under Enemy Only
 - dead/ragdoll filtering for players
+- stale-body/current-body filtering: each frame build `activeBodyByState` from PlayerState evidence (`GetPawn()`, `PawnPrivate`, `TargetCharacter`, `OwnerCharacter_LINK`) and skip an actor only when the same PlayerState clearly points to another valid actor; this prevents a dead survivor's old body from staying labeled as `Survivor` after the real player has switched to a hunter body
+- keep the current-body filter conservative: if PlayerState is missing, the active body is null, or the mapped actor is invalid, do not hide the ESP entry
 - enemy AI scan only if SDK evidence confirms classes and fields
 - if role display is uncertain, surface `Player`/unknown only as a temporary staged build and continue SDK reading before final
 

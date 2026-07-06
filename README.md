@@ -15,6 +15,7 @@
 - SDK 可能变了，需要重新使用 Dumper-7 生成 SDK。
 - ESP 名字显示为 `Unknown`、`Player`，或者在人多房间名字缺失。
 - 猎人/幸存者/敌人 ESP 判断失效。
+- 幸存者死亡后旧身体还留在原地显示 ESP，需要用 PlayerState 当前身体校验过滤旧 actor。
 - 中文 UI 或中文名字显示成方块。
 - 需要按浅到深生成多版 DLL，让使用者逐个测试。
 
@@ -109,7 +110,7 @@ skill 设计为从浅到深生成多个版本：
 v1_baseline_compile      只保证原项目 + 新 SDK 能编译
 v2_crash_safety          修启动/渲染崩溃
 v3_player_names          修 Unknown / Player / 人多没名字
-v4_roles_enemy           修猎人/幸存者/敌人 ESP
+v4_roles_enemy           修猎人/幸存者/敌人 ESP，并过滤死亡/旧身体 ESP
 v4.5_cjk_font            修中文方块字
 v5_feature_trim          只保留目标功能
 v6_final                 最终测试版
