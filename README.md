@@ -40,13 +40,13 @@
 推荐像普通 GitHub 项目一样安装。你把本仓库上传到 GitHub 后，其他用户可以在自己的 Codex 里直接说：
 
 ```text
-请从 https://github.com/CarzyBilly/Chameleon-ESP-Updater-Skill 安装 chameleon-esp-updater skill
+请从 https://github.com/CarzyBilly/Meccha-Chameleon-ESP-Updater-Skill 安装 chameleon-esp-updater skill
 ```
 
 或者更明确一点：
 
 ```text
-请把 https://github.com/CarzyBilly/Chameleon-ESP-Updater-Skill 里的 skills/chameleon-esp-updater 安装到我的 Codex skills 目录
+请把 https://github.com/CarzyBilly/Meccha-Chameleon-ESP-Updater-Skill 里的 skills/chameleon-esp-updater 安装到我的 Codex skills 目录
 ```
 
 Codex 会把 skill 安装到类似下面的位置：

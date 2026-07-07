@@ -40,13 +40,13 @@ In the from-zero quick-adaptation build, other features are hidden, disabled, or
 The recommended installation path is GitHub-based. After this repository is uploaded to GitHub, other users can ask their own Codex:
 
 ```text
-Install the chameleon-esp-updater skill from https://github.com/CarzyBilly/Chameleon-ESP-Updater-Skill
+Install the chameleon-esp-updater skill from https://github.com/CarzyBilly/Meccha-Chameleon-ESP-Updater-Skill
 ```
 
 Or, more explicitly:
 
 ```text
-Install skills/chameleon-esp-updater from https://github.com/CarzyBilly/Chameleon-ESP-Updater-Skill into my Codex skills directory.
+Install skills/chameleon-esp-updater from https://github.com/CarzyBilly/Meccha-Chameleon-ESP-Updater-Skill into my Codex skills directory.
 ```
 
 Codex should install it to a path similar to:
